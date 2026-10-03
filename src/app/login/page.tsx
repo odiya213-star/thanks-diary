@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -5,6 +6,15 @@ import { signIn, signUp } from "@/app/auth/actions";
 import { createClient } from "@/lib/supabase/server";
 
 import styles from "./login.module.css";
+
+export const metadata: Metadata = {
+  title: "로그인",
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+  },
+};
 
 type LoginPageProps = {
   searchParams: Promise<{
@@ -18,7 +28,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const { data } = await supabase.auth.getClaims();
 
   if (data?.claims?.sub) {
-    redirect("/");
+    redirect("/diary");
   }
 
   const params = await searchParams;

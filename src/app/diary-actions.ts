@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
 function homeRedirect(kind: "error" | "message", message: string): never {
-  redirect(`/?${kind}=${encodeURIComponent(message)}`);
+  redirect(`/diary?${kind}=${encodeURIComponent(message)}`);
 }
 
 function readEntry(formData: FormData) {
@@ -97,7 +97,7 @@ export async function createEntry(formData: FormData) {
     content,
   );
 
-  revalidatePath("/");
+  revalidatePath("/diary");
 
   if (!replySaved) {
     homeRedirect(
@@ -141,7 +141,7 @@ export async function updateEntry(formData: FormData) {
     content,
   );
 
-  revalidatePath("/");
+  revalidatePath("/diary");
 
   if (!replySaved) {
     homeRedirect(
@@ -171,6 +171,6 @@ export async function deleteEntry(formData: FormData) {
     homeRedirect("error", "일기를 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.");
   }
 
-  revalidatePath("/");
+  revalidatePath("/diary");
   homeRedirect("message", "감사일기를 삭제했습니다.");
 }

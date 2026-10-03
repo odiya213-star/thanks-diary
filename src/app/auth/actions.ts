@@ -48,7 +48,7 @@ export async function signIn(formData: FormData) {
     loginRedirect("error", friendlyAuthError(error.message));
   }
 
-  redirect("/");
+  redirect("/diary");
 }
 
 export async function signUp(formData: FormData) {
@@ -78,7 +78,7 @@ export async function signUp(formData: FormData) {
   }
 
   if (data.session) {
-    redirect("/");
+    redirect("/diary");
   }
 
   loginRedirect("message", "가입 확인 메일을 보냈습니다. 메일의 링크를 눌러 주세요.");

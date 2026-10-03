@@ -1,189 +1,137 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
-import { signOut } from "@/app/auth/actions";
-import { SubmitButton } from "@/app/components/submit-button";
-import { createEntry, deleteEntry, updateEntry } from "@/app/diary-actions";
-import { createClient } from "@/lib/supabase/server";
+import styles from "./landing.module.css";
 
-import aiStyles from "./ai.module.css";
-import styles from "./page.module.css";
+const siteUrl = "https://thanks-diary.vercel.app";
 
-type HomePageProps = {
-  searchParams: Promise<{
-    error?: string;
-    message?: string;
-  }>;
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+  },
 };
 
-function todayInKorea() {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Seoul",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
-}
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "하루감사",
+  alternateName: "감사일기",
+  url: `${siteUrl}/`,
+  description:
+    "하루에 한 가지 고마운 순간을 기록하고 따뜻한 AI 답장을 받는 온라인 감사일기",
+};
 
-function formatDate(date: string) {
-  const [year, month, day] = date.split("-");
-  return `${year}년 ${Number(month)}월 ${Number(day)}일`;
-}
-
-export default async function Home({ searchParams }: HomePageProps) {
-  const supabase = await createClient();
-  const { data: authData } = await supabase.auth.getClaims();
-  const userId = authData?.claims?.sub;
-
-  if (!userId) {
-    redirect("/login");
-  }
-
-  const email = typeof authData.claims.email === "string"
-    ? authData.claims.email
-    : "감사 기록자";
-  const { data: entries, error: entriesError } = await supabase
-    .from("gratitude_entries")
-    .select("id, entry_date, content, ai_reflection, created_at")
-    .eq("user_id", userId)
-    .order("entry_date", { ascending: false });
-  const params = await searchParams;
-
+export default function Home() {
   return (
-    <main className={styles.page}>
-      <header className={styles.header}>
-        <Link className={styles.brand} href="/">
-          <span aria-hidden="true">✦</span>
-          하루감사
-        </Link>
-        <div className={styles.account}>
-          <span>{email}</span>
-          <form action={signOut}>
-            <button type="submit">로그아웃</button>
-          </form>
-        </div>
-      </header>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
+      <main className={styles.page}>
+        <header className={styles.header}>
+          <Link className={styles.brand} href="/" aria-label="하루감사 홈">
+            <span aria-hidden="true">✦</span>
+            하루감사
+          </Link>
+          <nav className={styles.nav} aria-label="주요 메뉴">
+            <a href="#how-it-works">사용 방법</a>
+            <a href="#benefits">감사 기록의 장점</a>
+            <Link className={styles.loginLink} href="/login">로그인</Link>
+          </nav>
+        </header>
 
-      <div className={styles.shell}>
         <section className={styles.hero}>
-          <p className={styles.eyebrow}>TODAY&apos;S GRATITUDE</p>
-          <h1>오늘, 어떤 순간이<br />마음을 따뜻하게 했나요?</h1>
-          <p>크고 특별한 일이 아니어도 괜찮아요.<br />지금 떠오르는 한 가지를 천천히 적어보세요.</p>
+          <div className={styles.heroContent}>
+            <p className={styles.eyebrow}>A SMALL DAILY RITUAL</p>
+            <h1>오늘의 고마움을<br />한 문장으로 남겨보세요.</h1>
+            <p className={styles.heroDescription}>
+              하루에 한 번, 마음에 남은 순간을 기록하세요. 공감하는 AI 친구
+              공가미가 당신의 이야기에 따뜻한 답장을 건넵니다.
+            </p>
+            <div className={styles.heroActions}>
+              <Link className={styles.primaryButton} href="/login">무료로 시작하기</Link>
+              <a className={styles.textLink} href="#how-it-works">어떻게 사용하나요? →</a>
+            </div>
+          </div>
+          <div className={styles.preview} aria-label="하루감사 기록 예시">
+            <div className={styles.previewTop}>
+              <span>오늘의 감사</span>
+              <time dateTime="2026-10-03">10월 3일</time>
+            </div>
+            <blockquote>
+              바쁜 아침에도 따뜻한 커피 한 잔을 건네준 동료에게 감사했다.
+            </blockquote>
+            <div className={styles.reply}>
+              <strong><span aria-hidden="true">✦</span> 공가미의 답장</strong>
+              <p>작은 배려를 알아보는 마음이 오늘을 더 따뜻하게 만들었네요.</p>
+            </div>
+          </div>
         </section>
 
-        {(params.error || entriesError) && (
-          <p className={`${styles.notice} ${styles.error}`} role="alert">
-            {params.error ?? "일기를 불러오지 못했습니다. 잠시 후 새로고침해 주세요."}
-          </p>
-        )}
-        {params.message && (
-          <p className={`${styles.notice} ${styles.success}`} role="status">
-            {params.message}
-          </p>
-        )}
-
-        <section className={styles.composer} aria-labelledby="new-entry-title">
-          <div className={styles.composerHeading}>
-            <div>
-              <span className={styles.number}>01</span>
-              <h2 id="new-entry-title">오늘의 감사 기록</h2>
-            </div>
-            <span className={styles.prompt}>한 문장부터 시작해도 좋아요</span>
+        <section className={styles.steps} id="how-it-works" aria-labelledby="steps-title">
+          <div className={styles.sectionIntro}>
+            <p>HOW IT WORKS</p>
+            <h2 id="steps-title">감사하는 습관은<br />가볍게 시작할 수 있어요.</h2>
           </div>
-          <form action={createEntry} className={styles.entryForm}>
-            <label className={styles.dateField}>
-              날짜
-              <input type="date" name="entryDate" defaultValue={todayInKorea()} required />
-            </label>
-            <label className={styles.contentField}>
-              <span className={styles.srOnly}>감사일기 내용</span>
-              <textarea
-                name="content"
-                maxLength={2000}
-                placeholder="오늘 고마웠던 순간을 적어보세요…"
-                required
-              />
-            </label>
-            <div className={styles.formFooter}>
-              <span>최대 2,000자</span>
-              <SubmitButton
-                idleLabel="기록 남기기"
-                pendingLabel="공가미가 답장을 쓰고 있어요…"
-                showArrow
-              />
-            </div>
-          </form>
-          <p className={aiStyles.consent}>
-            기록하면 공가미의 답장을 만들기 위해 이 일기 내용만 Groq로 전송됩니다.
-          </p>
+          <ol className={styles.stepList}>
+            <li>
+              <span>01</span>
+              <h3>오늘을 떠올려요</h3>
+              <p>크고 특별한 일이 아니어도 괜찮아요. 마음에 남은 한 순간이면 충분합니다.</p>
+            </li>
+            <li>
+              <span>02</span>
+              <h3>한 문장으로 적어요</h3>
+              <p>날짜와 함께 기록하면 하루하루의 고마운 순간이 차곡차곡 쌓입니다.</p>
+            </li>
+            <li>
+              <span>03</span>
+              <h3>따뜻한 답장을 받아요</h3>
+              <p>공가미가 기록을 읽고 오늘의 마음을 다정하게 되짚어 드립니다.</p>
+            </li>
+          </ol>
         </section>
 
-        <section className={styles.archive} aria-labelledby="archive-title">
-          <div className={styles.sectionHeading}>
-            <div>
-              <span className={styles.number}>02</span>
-              <h2 id="archive-title">차곡차곡 쌓인 감사</h2>
-            </div>
-            <span>{entries?.length ?? 0}개의 기록</span>
+        <section className={styles.benefits} id="benefits" aria-labelledby="benefits-title">
+          <div>
+            <p className={styles.eyebrow}>WHY GRATITUDE</p>
+            <h2 id="benefits-title">평범한 하루에서<br />좋았던 순간을 발견해요.</h2>
           </div>
-
-          {!entries?.length ? (
-            <div className={styles.empty}>
+          <div className={styles.benefitList}>
+            <article>
               <span aria-hidden="true">✦</span>
-              <h3>아직 기록이 없어요</h3>
-              <p>위에서 오늘의 첫 감사를 남겨보세요.</p>
-            </div>
-          ) : (
-            <div className={styles.entryList}>
-              {entries.map((entry) => (
-                <article className={styles.entryCard} key={entry.id}>
-                  <div className={styles.entryTopline}>
-                    <time dateTime={entry.entry_date}>{formatDate(entry.entry_date)}</time>
-                    <span aria-hidden="true">✦</span>
-                  </div>
-                  <p className={styles.entryContent}>{entry.content}</p>
-                  {entry.ai_reflection && (
-                    <aside className={aiStyles.reflection}>
-                      <div className={aiStyles.reflectionHeader}>
-                        <span aria-hidden="true">✦</span>
-                        공가미의 답장
-                      </div>
-                      <p>{entry.ai_reflection}</p>
-                    </aside>
-                  )}
-                  <div className={styles.cardActions}>
-                    <details className={styles.editDetails}>
-                      <summary>수정</summary>
-                      <form action={updateEntry} className={styles.editForm}>
-                        <input type="hidden" name="id" value={entry.id} />
-                        <input type="date" name="entryDate" defaultValue={entry.entry_date} required />
-                        <textarea name="content" defaultValue={entry.content} maxLength={2000} required />
-                        <p className={aiStyles.editNote}>
-                          수정하면 공가미도 새 내용에 맞춰 다시 답장해요.
-                        </p>
-                        <SubmitButton
-                          idleLabel="수정 저장"
-                          pendingLabel="공가미가 새 답장을 쓰고 있어요…"
-                        />
-                      </form>
-                    </details>
-                    <details className={styles.deleteDetails}>
-                      <summary>삭제</summary>
-                      <form action={deleteEntry}>
-                        <input type="hidden" name="id" value={entry.id} />
-                        <span>정말 삭제할까요?</span>
-                        <button type="submit">삭제 확인</button>
-                      </form>
-                    </details>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
+              <h3>나만의 비공개 기록</h3>
+              <p>작성한 감사일기는 로그인한 본인만 볼 수 있도록 안전하게 보관됩니다.</p>
+            </article>
+            <article>
+              <span aria-hidden="true">✦</span>
+              <h3>부담 없는 하루 한 문장</h3>
+              <p>잘 쓰려고 애쓰지 않아도 괜찮아요. 짧은 기록부터 천천히 시작하세요.</p>
+            </article>
+            <article>
+              <span aria-hidden="true">✦</span>
+              <h3>공감하는 AI 답장</h3>
+              <p>공가미의 따뜻한 답장과 함께 내가 느낀 고마움을 한 번 더 바라봅니다.</p>
+            </article>
+          </div>
         </section>
-      </div>
 
-      <footer className={styles.footer}>작은 감사가 모여 좋은 하루가 됩니다.</footer>
-    </main>
+        <section className={styles.cta}>
+          <span aria-hidden="true">✦</span>
+          <h2>오늘의 작은 감사를<br />지금 기록해 보세요.</h2>
+          <p>가입하고 첫 번째 고마운 순간을 남기는 데 1분이면 충분합니다.</p>
+          <Link className={styles.primaryButton} href="/login">하루감사 시작하기</Link>
+        </section>
+
+        <footer className={styles.footer}>
+          <Link className={styles.brand} href="/"><span aria-hidden="true">✦</span>하루감사</Link>
+          <p>작은 감사가 모여 좋은 하루가 됩니다.</p>
+          <Link href="/login">로그인</Link>
+        </footer>
+      </main>
+    </>
   );
 }
