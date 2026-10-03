@@ -1,0 +1,49 @@
+.reflection {
+  margin-top: 22px;
+  padding: 20px 22px;
+  color: #34483c;
+  background: #edf3ed;
+  border: 1px solid #d6e3d8;
+  border-radius: 12px;
+}
+
+.reflectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #42604e;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.reflectionHeader span {
+  color: #b27a28;
+}
+
+.reflection p {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+.consent {
+  margin-top: 16px;
+  color: #92968f;
+  font-size: 11px;
+  line-height: 1.6;
+  text-align: right;
+}
+
+.editNote {
+  color: #8f948e;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+@media (max-width: 620px) {
+  .consent {
+    text-align: left;
+  }
+}
